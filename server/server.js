@@ -9,7 +9,7 @@ import cors from 'cors';                  // Enables Cross-Origin Resource Shari
 // 🧩 Importing local files
 import connectDB from './config/db.js';                   // Function that connects to MongoDB
 import productsRoutes from './routes/productRoutes.js';   // Routes handling product-related APIs
-import userRoutes from './routes/userRoutes.js';          // Routes handling user-related APIs
+import userRoutes from './src/routes/userRoutes.js';          // Routes handling user-related APIs
 import orderRoutes from './routes/OrderRoutes.js';        // Routes handling order-related APIs
 import uploadRoutes from './routes/uploadRoutes.js';      // Routes handling file uploads
 import { notFound, errorHandler } from './middlewear/errorMiddlewear.js';  // Custom error middlewares

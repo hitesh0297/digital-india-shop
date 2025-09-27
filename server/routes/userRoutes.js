@@ -1,3 +1,4 @@
+//TODO: Redundant
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../src/models/User.js';

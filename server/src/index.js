@@ -1,3 +1,4 @@
+// TODO: Redudant
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -10,6 +11,7 @@ import healthRoutes from './routes/health.js';
 import authRoutes from './routes/auth.js';
 import productRoutes from './routes/products.js';
 import { notFound, errorHandler } from './middleware/error.js';
+import userRoutes from './routes/userRoutes.js';
 
 const app = express();
 
@@ -22,6 +24,7 @@ app.use(morgan('dev'));
 app.use('/api', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/users', userRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

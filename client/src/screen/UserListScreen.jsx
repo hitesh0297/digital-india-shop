@@ -94,7 +94,7 @@ function UserListScreen() {
                   </LinkContainer>
                   <Button
                     variant="danger"
-                    className="btn-sm"
+                    className="btn-sm ms-1"
                     onClick={() => deleteHandler(user._id)}
                   >
                     <i className="fas fa-trash"></i>
