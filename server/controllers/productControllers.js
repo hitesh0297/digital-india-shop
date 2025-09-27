@@ -4,18 +4,24 @@ import Product from '../models/productModel.js'
 //@route GET /api/products
 //@access Public
 const getProducts = asyncHandle(async(req,res)=>{
-  const pageSize=10
-  const page=Number(req.query.pageNumber) || 1
-  const keyword = req.query.keyword ? {
-    name: {
-      $regex: req.query.keyword,
-      $options: 'i'
-    }
-  }: {}
-  const count=await Product.countDocuments({...keyword})
-  const products=await Product.find({...keyword}).limit(pageSize).skip(pageSize * (page -1))
-  res.json({products , page , pages: Math.ceil(count / pageSize)});
+  try {
+    const pageSize=10
+    const page=Number(req.query.pageNumber) || 1
+    const keyword = req.query.keyword ? {
+      name: {
+        $regex: req.query.keyword,
+        $options: 'i'
+      }
+    }: {}
+    const count=await Product.countDocuments({...keyword})
+    const products=await Product.find({...keyword}).limit(pageSize).skip(pageSize * (page -1))
+    res.json({products , page , pages: Math.ceil(count / pageSize)});
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Server error' }) // 500 for unexpected issues
+  }
 })
+
 //@dec Fehct single Product
 //@route GET /api/products/:id
 //@access Public

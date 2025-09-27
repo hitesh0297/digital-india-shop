@@ -23,7 +23,7 @@ app.use(morgan('dev'));
 
 app.use('/api', healthRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
+//app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 
 app.use(notFound);

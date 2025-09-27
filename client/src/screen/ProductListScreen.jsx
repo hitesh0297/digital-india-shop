@@ -40,7 +40,7 @@ const Paginate = ({ page, pages, role = 'user' }) => (
 
 function ProductListScreen({ history, match }) {
   const navigate = useNavigate();
-  const { pageNumber } = useParams(); 
+  const { pageNumber } = useParams(0); 
   const pageNum = pageNumber || 1; 
 
   const dispatch = useDispatch();
@@ -138,18 +138,20 @@ function ProductListScreen({ history, match }) {
                   <td>{product.category}</td>
                   <td>{product.brand}</td>
                   <td>
-                    <LinkContainer to={`/admin/product/${product._id}/edit`}>
-                      <Button variant="light" className="btn-sm">
-                        <i className="fas fa-edit"></i>
+                    <div className="d-flex">
+                      <LinkContainer to={`/admin/product/${product._id}/edit`}>
+                        <Button variant="light" className="btn-sm">
+                          <i className="fas fa-edit"></i>
+                        </Button>
+                      </LinkContainer>
+                      <Button
+                        variant="danger"
+                        className="btn-sm ms-2"
+                        onClick={() => deleteHandler(product._id)}
+                      >
+                        <i className="fas fa-trash"></i>
                       </Button>
-                    </LinkContainer>
-                    <Button
-                      variant="danger"
-                      className="btn-sm"
-                      onClick={() => deleteHandler(product._id)}
-                    >
-                      <i className="fas fa-trash"></i>
-                    </Button>
+                    </div>
                   </td>
                 </tr>
               ))}

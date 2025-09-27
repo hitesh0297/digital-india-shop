@@ -1,15 +1,11 @@
 import { Router } from 'express';
 import Product from '../src/models/Product.js';
+import { getProducts } from '../controllers/productControllers.js';
 
 const router = Router();
 
 // GET /api/products
-router.get('/', async (req, res, next) => {
-  try {
-    const list = await Product.find().sort({ createdAt: -1 }).lean();
-    res.json(list);
-  } catch (e) { next(e); }
-});
+router.get('/', getProducts);
 
 // GET /api/products/:id
 router.get('/:id', async (req, res, next) => {

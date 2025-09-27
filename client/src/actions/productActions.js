@@ -32,11 +32,13 @@ export const PRODUCT_TOP_FAIL = "PRODUCT_TOP_FAIL";
 // ----------------- ACTION CREATORS -----------------
 import axios from "axios";
 
+const API_URL = import.meta.env.VITE_API_URL
+
 // List Products
 export const listProducts = (keyword = "", pageNumber = "") => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_LIST_REQUEST });
-    const { data } = await axios.get(`/api/products?keyword=${keyword}&pageNumber=${pageNumber}`);
+    const { data } = await axios.get(`${API_URL}/api/products?keyword=${keyword}&pageNumber=${pageNumber}`);
     dispatch({ type: PRODUCT_LIST_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
@@ -50,7 +52,7 @@ export const listProducts = (keyword = "", pageNumber = "") => async (dispatch) 
 export const listProductDetails = (id) => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_DETAILS_REQUEST });
-    const { data } = await axios.get(`/api/products/${id}`);
+    const { data } = await axios.get(`${API_URL}/api/products/${id}`);
     dispatch({ type: PRODUCT_DETAILS_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
@@ -66,7 +68,7 @@ export const deleteProduct = (id) => async (dispatch, getState) => {
     dispatch({ type: PRODUCT_DELETE_REQUEST });
     const { userLogin: { userInfo } } = getState();
     const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-    await axios.delete(`/api/products/${id}`, config);
+    await axios.delete(`${API_URL}/api/products/${id}`, config);
     dispatch({ type: PRODUCT_DELETE_SUCCESS });
   } catch (error) {
     dispatch({ type: PRODUCT_DELETE_FAIL, payload: error.response?.data.message || error.message });
@@ -79,7 +81,7 @@ export const createProduct = () => async (dispatch, getState) => {
     dispatch({ type: PRODUCT_CREATE_REQUEST });
     const { userLogin: { userInfo } } = getState();
     const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-    const { data } = await axios.post(`/api/products`, {}, config);
+    const { data } = await axios.post(`${API_URL}/api/products`, {}, config);
     dispatch({ type: PRODUCT_CREATE_SUCCESS, payload: data });
   } catch (error) {
     dispatch({ type: PRODUCT_CREATE_FAIL, payload: error.response?.data.message || error.message });
@@ -92,7 +94,7 @@ export const updateProduct = (product) => async (dispatch, getState) => {
     dispatch({ type: PRODUCT_UPDATE_REQUEST });
     const { userLogin: { userInfo } } = getState();
     const config = { headers: { "Content-Type": "application/json", Authorization: `Bearer ${userInfo.token}` } };
-    const { data } = await axios.put(`/api/products/${product._id}`, product, config);
+    const { data } = await axios.put(`${API_URL}/api/products/${product._id}`, product, config);
     dispatch({ type: PRODUCT_UPDATE_SUCCESS, payload: data });
   } catch (error) {
     dispatch({ type: PRODUCT_UPDATE_FAIL, payload: error.response?.data.message || error.message });
@@ -105,7 +107,7 @@ export const createProductReview = (productId, review) => async (dispatch, getSt
     dispatch({ type: PRODUCT_CREATE_REVIEW_REQUEST });
     const { userLogin: { userInfo } } = getState();
     const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${userInfo.token}` } };
-    await axios.post(`/api/products/${productId}/reviews`, review, config);
+    await axios.post(`${API_URL}/api/products/${productId}/reviews`, review, config);
     dispatch({ type: PRODUCT_CREATE_REVIEW_SUCCESS });
   } catch (error) {
     dispatch({ type: PRODUCT_CREATE_REVIEW_FAIL, payload: error.response?.data.message || error.message });
@@ -116,7 +118,7 @@ export const createProductReview = (productId, review) => async (dispatch, getSt
 export const listTopProducts = () => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_TOP_REQUEST });
-    const { data } = await axios.get(`/api/products/top`);
+    const { data } = await axios.get(`${API_URL}/api/products/top`);
     dispatch({ type: PRODUCT_TOP_SUCCESS, payload: data });
   } catch (error) {
     dispatch({ type: PRODUCT_TOP_FAIL, payload: error.response?.data.message || error.message });

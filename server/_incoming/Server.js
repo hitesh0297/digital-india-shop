@@ -19,7 +19,7 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-app.use(express.json());
+/* app.use(express.json());
 
 // Moved product routes into productsRoutes
 app.use('/api/products', productsRoutes);
@@ -49,7 +49,7 @@ if (process.env.NODE_ENV === 'production') {
 app.use(notFound);
 
 // id error
-app.use(errorHandler);
+app.use(errorHandler); */
 
 const PORT = process.env.PORT || 5000;
 app.listen(
