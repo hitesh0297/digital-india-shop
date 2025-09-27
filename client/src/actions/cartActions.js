@@ -10,7 +10,12 @@ const API_URL = import.meta.env.VITE_API_URL
 
 // Add item to cart
 export const addToCart = (id, qty) => async (dispatch, getState) => {
-  const { data } = await axios.get(`${API_URL}/api/products/${id}`);
+
+  const config = {
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+  };
+  
+  const { data } = await axios.get(`${API_URL}/api/products/${id}`, config);
 
   dispatch({
     type: CART_ADD_ITEM,

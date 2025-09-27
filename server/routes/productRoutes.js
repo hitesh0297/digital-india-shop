@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import Product from '../src/models/Product.js';
-import { getProducts, updateProduct } from '../controllers/productControllers.js';
+import { createProduct, deleteProduct, getProducts, updateProduct } from '../controllers/productControllers.js';
 
 const router = Router();
 
@@ -16,6 +16,10 @@ router.get('/:id', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+router.post('/create', createProduct);
+
 router.put('/:id', updateProduct);
+
+router.delete('/:id', deleteProduct);
 
 export default router;

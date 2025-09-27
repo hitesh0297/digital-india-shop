@@ -105,6 +105,7 @@ export default function ProductEditScreen() {
   const onFileInput = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
+    setImage(file.name)
     setImageFile(file)
     setLocalPreview(URL.createObjectURL(file))
   }
@@ -113,6 +114,7 @@ export default function ProductEditScreen() {
     e.stopPropagation()
     const file = e.dataTransfer?.files?.[0]
     if (!file) return
+    setImage(file.name)
     setImageFile(file)
     setLocalPreview(URL.createObjectURL(file))
   }
@@ -124,7 +126,16 @@ export default function ProductEditScreen() {
   // Submit handlers
   const handleCreate = (e) => {
     e.preventDefault()
-    dispatch(createProduct()) // server assigns user from token
+    const payload = {
+      name,
+      price: Number(price),
+      image, // will be overwritten later if imageFile is provided & uploaded
+      brand,
+      category,
+      countInStock: Number(countInStock),
+      description,
+    }
+    dispatch(createProduct(payload, imageFile)) // server assigns user from token
   }
 
   const handleUpdate = (e) => {
@@ -231,7 +242,7 @@ export default function ProductEditScreen() {
                 >
                   {localPreview || image ? (
                     <img
-                      src={localPreview || image}
+                      src={localPreview || API_URL + image}
                       alt="preview"
                       style={{ maxHeight: 160, maxWidth: '100%', objectFit: 'contain' }}
                     />

@@ -15,6 +15,7 @@ import uploadRoutes from './routes/uploadRoutes.js';      // Routes handling fil
 import authRoutes from './src/routes/auth.js';      // Routes handling file uploads
 import { notFound, errorHandler } from './middlewear/errorMiddlewear.js';  // Custom error middlewares
 import { config } from './src/config/env.js';             // Custom config file for environment variables (optional)
+import { protect } from './middlewear/authMiddlewear.js';
 
 // 🧭 Load environment variables from .env file
 dotenv.config();
@@ -43,7 +44,7 @@ app.use(cors({
 app.use('/api/auth', authRoutes);
 
 // 🛍️ All product-related APIs (e.g., GET /api/products)
-app.use('/api/products', productsRoutes);
+app.use('/api/products', protect, productsRoutes);
 
 // 👤 All user-related APIs (e.g., POST /api/users/login)
 app.use('/api/users', userRoutes);
@@ -65,7 +66,7 @@ app.get('/api/config/paypal', (req, res) =>
 const __dirname = path.resolve();
 
 // 📤 Make "uploads" folder publicly accessible
-app.use('/uploads', express.static(path.join(__dirname, '/server/uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
 if (process.env.NODE_ENV === 'production') {
   // Serve built frontend files (React build)

@@ -6,6 +6,8 @@ import Message from '../Components/Message'
 import { listProductDetails } from '../actions/productActions'
 import { useDispatch, useSelector } from 'react-redux'
 
+const API_URL = import.meta.env.VITE_API_URL
+
 const Loader = () => (
   <Spinner
     animation="border"
@@ -49,7 +51,7 @@ function ProductScreen() {
     <div className="container py-4">
       <Row>
         <Col md={5} className="mb-3">
-          <Image src={product.image} alt={product.name} fluid rounded />
+          <Image src={API_URL + product.image} alt={product.name} fluid rounded />
         </Col>
 
         <Col md={4} className="mb-3">

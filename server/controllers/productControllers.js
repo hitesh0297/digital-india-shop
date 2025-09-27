@@ -39,32 +39,46 @@ const getProductById = asyncHandle(async(req,res)=>{
 //@route DELETE /api/products/:id
 //@access Private /admin
 const deleteProduct = asyncHandle(async(req,res)=>{
-  const product =await Product.findById(req.params.id)
-  if (product) {
-    await product.remove()
-    res.send({message: "Product deleted successfully"})
-  }else{
-    res.status(404)
-    throw new Error("Product Not Found")
+  try {
+    const product =await Product.findById(req.params.id)
+    if (product) {
+      await product.deleteOne()
+      res.send({message: "Product deleted successfully"})
+    }else{
+      res.status(404)
+      throw new Error("Product Not Found")
+    }
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Server error' }) // 500 for unexpected issues
   }
 })
 //@dec Create a product
 //@route POST /api/products
 //@access Private /admin
 const createProduct = asyncHandle(async(req,res)=>{
-  const product= new Product({
-    name:"Sample Name",
-    price:0,
-    user:req.user._id,
-    image:"/images/sample.jpg",
-    brand: "Sample brand ",
-    category:"Sample Category",
-    countInStock:0,
-    numReviews:0,
-    description:"Sample description"
-  })
-  const createdProduct = await product.save()
-  res.status(201).json(createdProduct)
+  try {
+    const { name , price , description, image , brand , category , countInStock } = req.body
+    const product= new Product({
+      name: name,
+      price: price,
+      description: description,
+      image: image,
+      brand: brand,
+      category: category,
+      countInStock: countInStock,
+      rating: 0,
+      numReviews:0,
+      reviews: [],
+      user:req.user._id,
+    })
+    const createdProduct = await Product.create([product])
+    console.log(createdProduct[0]);
+    res.status(201).json(createdProduct[0])
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Server error' }) // 500 for unexpected issues
+  }
 })
 //@dec Update a product
 //@route Put /api/products/:id

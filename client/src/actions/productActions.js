@@ -38,7 +38,8 @@ const API_URL = import.meta.env.VITE_API_URL
 export const listProducts = (keyword = "", pageNumber = "") => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_LIST_REQUEST });
-    const { data } = await axios.get(`${API_URL}/api/products?keyword=${keyword}&pageNumber=${pageNumber}`);
+    const config = { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } };
+    const { data } = await axios.get(`${API_URL}/api/products?keyword=${keyword}&pageNumber=${pageNumber}`, config);
     dispatch({ type: PRODUCT_LIST_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
@@ -52,7 +53,8 @@ export const listProducts = (keyword = "", pageNumber = "") => async (dispatch) 
 export const listProductDetails = (id) => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_DETAILS_REQUEST });
-    const { data } = await axios.get(`${API_URL}/api/products/${id}`);
+    const config = { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } };
+    const { data } = await axios.get(`${API_URL}/api/products/${id}`, config);
     dispatch({ type: PRODUCT_DETAILS_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
@@ -67,7 +69,7 @@ export const deleteProduct = (id) => async (dispatch, getState) => {
   try {
     dispatch({ type: PRODUCT_DELETE_REQUEST });
     const { userLogin: { userInfo } } = getState();
-    const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
+    const config = { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } };
     await axios.delete(`${API_URL}/api/products/${id}`, config);
     dispatch({ type: PRODUCT_DELETE_SUCCESS });
   } catch (error) {
@@ -76,13 +78,50 @@ export const deleteProduct = (id) => async (dispatch, getState) => {
 };
 
 // Create Product
-export const createProduct = () => async (dispatch, getState) => {
+export const createProduct = (product, imageFile) => async (dispatch, getState) => {
   try {
     dispatch({ type: PRODUCT_CREATE_REQUEST });
-    const { userLogin: { userInfo } } = getState();
-    const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-    const { data } = await axios.post(`${API_URL}/api/products`, {}, config);
-    dispatch({ type: PRODUCT_CREATE_SUCCESS, payload: data });
+    //const { userLogin: { userInfo } } = getState();
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    };
+    const createdProduct = await axios.post(`${API_URL}/api/products/create`, product, config);
+
+    let created = createdProduct;
+
+    // 2) If we have an image file, upload it and then patch the product's image path
+    if (createdProduct.status == 201 && imageFile) {
+      const form = new FormData()
+      form.append('image', imageFile)
+
+      const uploadCfg = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+
+      // Expect server to save into client/public/images and return path like "/images/<filename>"
+      const { data: uploadedPath } = await axios.post(
+        `${API_URL}/api/upload`,
+        form,
+        uploadCfg
+      )
+
+      // 3) Persist the new image path onto the product
+      const { data: created2 } = await axios.put(
+        `${API_URL}/api/products/${createdProduct.data._id}`,
+        { ...product, image: uploadedPath?.file },
+        config
+      )
+
+      created = created2
+    }
+
+    dispatch({ type: PRODUCT_CREATE_SUCCESS, payload: created });
   } catch (error) {
     dispatch({ type: PRODUCT_CREATE_FAIL, payload: error.response?.data.message || error.message });
   }
@@ -156,7 +195,7 @@ export const createProductReview = (productId, review) => async (dispatch, getSt
   try {
     dispatch({ type: PRODUCT_CREATE_REVIEW_REQUEST });
     const { userLogin: { userInfo } } = getState();
-    const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${userInfo.token}` } };
+    const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` } };
     await axios.post(`${API_URL}/api/products/${productId}/reviews`, review, config);
     dispatch({ type: PRODUCT_CREATE_REVIEW_SUCCESS });
   } catch (error) {
@@ -168,7 +207,8 @@ export const createProductReview = (productId, review) => async (dispatch, getSt
 export const listTopProducts = () => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_TOP_REQUEST });
-    const { data } = await axios.get(`${API_URL}/api/products/top`);
+    const config = { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } };
+    const { data } = await axios.get(`${API_URL}/api/products/top`, config);
     dispatch({ type: PRODUCT_TOP_SUCCESS, payload: data });
   } catch (error) {
     dispatch({ type: PRODUCT_TOP_FAIL, payload: error.response?.data.message || error.message });

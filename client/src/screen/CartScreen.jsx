@@ -9,6 +9,8 @@ import Message from '../Components/Message';
 // Redux Actions
 import { addToCart, removeFromCart } from '../actions/cartActions';
 
+const API_URL = import.meta.env.VITE_API_URL
+
 const CartScreen = () => {
   // Get productId from URL
   const { id: productId } = useParams();
@@ -60,7 +62,7 @@ const CartScreen = () => {
                 <Row>
                   {/* Product Image */}
                   <Col md={2}>
-                    <Image src={item.image} alt={item.name} fluid rounded />
+                    <Image src={API_URL + item.image} alt={item.name} fluid rounded />
                   </Col>
 
                   {/* Product Name (clickable link) */}
