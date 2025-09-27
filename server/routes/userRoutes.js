@@ -5,7 +5,7 @@ import User from '../src/models/User.js';
 
 const router = Router();
 
-/* router.post('/register', async (req, res, next) => {
+router.post('/register', async (req, res, next) => {
   try {
     const { name, email, password } = req.body || {};
     if (!name || !email || !password) return res.status(400).json({ error: 'Missing fields' });
@@ -24,6 +24,6 @@ router.post('/login', async (req, res, next) => {
     const token = jwt.sign({ sub: user._id.toString(), role: user.role || 'user' }, process.env.JWT_SECRET || 'dev_secret', { expiresIn: '7d' });
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role || 'user' } });
   } catch (e) { next(e); }
-}); */
+});
 
 export default router;

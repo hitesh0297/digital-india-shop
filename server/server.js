@@ -12,6 +12,7 @@ import productsRoutes from './routes/productRoutes.js';   // Routes handling pro
 import userRoutes from './src/routes/userRoutes.js';          // Routes handling user-related APIs
 import orderRoutes from './routes/OrderRoutes.js';        // Routes handling order-related APIs
 import uploadRoutes from './routes/uploadRoutes.js';      // Routes handling file uploads
+import authRoutes from './src/routes/auth.js';      // Routes handling file uploads
 import { notFound, errorHandler } from './middlewear/errorMiddlewear.js';  // Custom error middlewares
 import { config } from './src/config/env.js';             // Custom config file for environment variables (optional)
 
@@ -37,6 +38,9 @@ app.use(cors({
   origin: config.corsOrigin,    // Allowed frontend origin(s)
   credentials: true             // Allow sending cookies or authorization headers
 }));
+
+// Authentication routes
+app.use('/api/auth', authRoutes);
 
 // 🛍️ All product-related APIs (e.g., GET /api/products)
 app.use('/api/products', productsRoutes);

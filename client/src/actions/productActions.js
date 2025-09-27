@@ -89,17 +89,67 @@ export const createProduct = () => async (dispatch, getState) => {
 };
 
 // Update Product
-export const updateProduct = (product) => async (dispatch, getState) => {
+export const updateProduct = (product, imageFile) => async (dispatch, getState) => {
   try {
-    dispatch({ type: PRODUCT_UPDATE_REQUEST });
-    const { userLogin: { userInfo } } = getState();
-    const config = { headers: { "Content-Type": "application/json", Authorization: `Bearer ${userInfo.token}` } };
-    const { data } = await axios.put(`${API_URL}/api/products/${product._id}`, product, config);
-    dispatch({ type: PRODUCT_UPDATE_SUCCESS, payload: data });
+    dispatch({ type: PRODUCT_UPDATE_REQUEST })
+
+    const {
+      userLogin: { userInfo },
+    } = getState()
+
+    const jsonCfg = {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    }
+
+    // 1) Update base product fields
+    const { data: updated1 } = await axios.put(
+      `${API_URL}/api/products/${product._id}`,
+      product,
+      jsonCfg
+    )
+
+    let updated = updated1
+
+    // 2) If we have an image file, upload it and then patch the product's image path
+    if (imageFile) {
+      const form = new FormData()
+      form.append('image', imageFile)
+
+      const uploadCfg = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+
+      // Expect server to save into client/public/images and return path like "/images/<filename>"
+      const { data: uploadedPath } = await axios.post(
+        `${API_URL}/api/upload`,
+        form,
+        uploadCfg
+      )
+
+      // 3) Persist the new image path onto the product
+      const { data: updated2 } = await axios.put(
+        `${API_URL}/api/products/${product._id}`,
+        { ...product, image: uploadedPath?.file },
+        jsonCfg
+      )
+
+      updated = updated2
+    }
+
+    dispatch({ type: PRODUCT_UPDATE_SUCCESS, payload: updated })
   } catch (error) {
-    dispatch({ type: PRODUCT_UPDATE_FAIL, payload: error.response?.data.message || error.message });
+    dispatch({
+      type: PRODUCT_UPDATE_FAIL,
+      payload: error.response?.data.message || error.message,
+    })
   }
-};
+}
 
 // Create Product Review
 export const createProductReview = (productId, review) => async (dispatch, getState) => {

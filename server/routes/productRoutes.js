@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import Product from '../src/models/Product.js';
-import { getProducts } from '../controllers/productControllers.js';
+import { getProducts, updateProduct } from '../controllers/productControllers.js';
 
 const router = Router();
 
@@ -15,5 +15,7 @@ router.get('/:id', async (req, res, next) => {
     res.json(p);
   } catch (e) { next(e); }
 });
+
+router.put('/:id', updateProduct);
 
 export default router;

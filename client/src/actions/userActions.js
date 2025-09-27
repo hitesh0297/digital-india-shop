@@ -41,15 +41,17 @@ export const login = (email, password) => async (dispatch) => {
     }
 
     // Make API call to login
-    const { data } = await axios.post(`${API_URL}/api/users/login`, { email, password }, config)
+    const { data } = await axios.post(`${API_URL}/api/auth/login`, { email, password }, config)
 
     dispatch({ type: USER_LOGIN_SUCCESS, payload: data.user }) // login success
     localStorage.setItem('userInfo', JSON.stringify(data.user)) // store user info in localStorage
+    localStorage.setItem('token', data.token)
+
   } catch (error) {
     dispatch({
       type: USER_LOGIN_FAIL,
-      payload: error.response && error.response.data.message
-        ? error.response.data.message
+      payload: error.response && error.response.data.error
+        ? error.response.data.error
         : error.message,
     })
   }
@@ -77,7 +79,7 @@ export const register = (name, email, password) => async (dispatch) => {
     }
 
     // Make API call to register user
-    const { data } = await axios.post(`${API_URL}/api/users/register`, { name, email, password }, config)
+    const { data } = await axios.post(`${API_URL}/api/auth/register`, { name, email, password }, config)
 
     dispatch({ type: USER_REGISTER_SUCCESS, payload: data }) // registration success
     dispatch({ type: USER_LOGIN_SUCCESS, payload: data }) // also log in the user after registration
@@ -85,8 +87,8 @@ export const register = (name, email, password) => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: USER_REGISTER_FAIL,
-      payload: error.response && error.response.data.message
-        ? error.response.data.message
+      payload: error.response && error.response.data.error
+        ? error.response.data.error
         : error.message,
     })
   }

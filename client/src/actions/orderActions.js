@@ -42,7 +42,7 @@ export const createOrder = (order) => async (dispatch, getState) => {
     const config = {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${userInfo.token}`,
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     };
 
@@ -70,7 +70,7 @@ export const getOrderDetails = (id) => async (dispatch, getState) => {
     } = getState();
 
     const config = {
-      headers: { Authorization: `Bearer ${userInfo.token}` },
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     };
 
     const { data } = await axios.get(`${API_URL}/api/orders/${id}`, config);
@@ -99,7 +99,7 @@ export const payOrder = (orderId, paymentResult) => async (dispatch, getState) =
     const config = {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${userInfo.token}`,
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     };
 
@@ -131,7 +131,7 @@ export const deliverOrder = (order) => async (dispatch, getState) => {
     } = getState();
 
     const config = {
-      headers: { Authorization: `Bearer ${userInfo.token}` },
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     };
 
     const { data } = await axios.put(
@@ -162,7 +162,7 @@ export const listMyOrders = () => async (dispatch, getState) => {
     } = getState();
 
     const config = {
-      headers: { Authorization: `Bearer ${userInfo.token}` },
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     };
 
     const { data } = await axios.get(`${API_URL}/api/orders/myorders`, config);

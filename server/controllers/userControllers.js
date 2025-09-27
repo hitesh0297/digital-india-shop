@@ -48,50 +48,65 @@ const registerUser = asyncHandle(async(req,res)=>{
 //@route GET /api/users/profile
 //@access Private
 const getUserProfile = asyncHandle(async(req,res)=>{
-  const user = await User.findById(req.params.userId)
+  try {
+    const user = await User.findById(req.params.userId)
 
-  if (user) {
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    })
-  }else{
-    res.status(404)
-    throw new Error("User Not Found")
+    if (user) {
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      })
+    }else{
+      res.status(404)
+      throw new Error("User Not Found")
+    }
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Server error' }) // 500 for unexpected issues
   }
 })
 //@dec Update user & profile
 //@route Put /api/users/profile
 //@access Private
 const updateUserProfile = asyncHandle(async(req,res)=>{
-  const user = await User.findById(req.body._id)
-  if (user) {
-    user.name =req.body.name || user.name
-    user.email = req.body.email || user.email
-    if (req.body.password) {
-      user.password = req.body.password
+  try {
+    const user = await User.findById(req.body._id)
+    if (user) {
+      user.name =req.body.name || user.name
+      user.email = req.body.email || user.email
+      if (req.body.password) {
+        user.password = req.body.password
+      }
+      const updatedUser = await user.save()
+      res.json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        token: generateToken(user._id)
+      })
+    }else{
+      res.status(404)
+      throw new Error("User Not Found")
     }
-    const updatedUser = await user.save()
-    res.json({
-      _id: updatedUser._id,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      role: updatedUser.role,
-      token: generateToken(user._id)
-    })
-  }else{
-    res.status(404)
-    throw new Error("User Not Found")
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Server error' }) // 500 for unexpected issues
   }
 })
 //@dec GET All Users
 //@route GET /api/users
 //@access Private/admin
 const getUsers = asyncHandle(async(req,res)=>{
-  const users = await User.find({})
-  res.status(201).json(users);
+  try {
+    const users = await User.find({})
+    res.status(201).json(users);
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Server error' }) // 500 for unexpected issues
+  }
 })
 
 //@dec Delete User
@@ -116,33 +131,44 @@ const deleteUser = asyncHandle(async(req,res)=>{
 //@route GET /api/users/:userId
 //@access Private/admin
 const getUserById = asyncHandle(async(req,res)=>{
-  const user = await User.findById(req.params.id).select('-password')
-  if(user) {
-    res.json(user)
-  }else{
-    res.status(404)
-    throw new Error("User Not Found")
+  try {
+    const user = await User.findById(req.params.id).select('-password')
+    if(user) {
+      res.json(user)
+    }else{
+      res.status(404)
+      throw new Error("User Not Found")
+    }
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Server error' }) // 500 for unexpected issues
   }
 })
 //@dec Update user
 //@route Put /api/users/:id
 //@access Private/admin
 const updateUser = asyncHandle(async(req,res)=>{
-  const user = await User.findById(req.params.userId)
-  if (user) {
-    user.name =req.body.name || user.name
-    user.email = req.body.email || user.email
-    user.role=req.body.role || user.role
-    const updatedUser = await user.save()
-    res.json({
-      _id: updatedUser._id,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      role: updatedUser.role,
-    })
-  }else{
-    res.status(404)
-    throw new Error("User Not Found")
+  try {
+    const user = await User.findById(req.params.userId)
+    if (user) {
+      user.name =req.body.name || user.name
+      user.email = req.body.email || user.email
+      user.role=req.body.role || user.role
+      const updatedUser = await user.save()
+      res.json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+      })
+    }else{
+      res.status(404)
+      throw new Error("User Not Found")
+    }
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Server error' }) // 500 for unexpected issues
   }
 })
+
 export {authUsers , registerUser ,getUserProfile, updateUserProfile , getUsers , deleteUser ,getUserById ,updateUser}

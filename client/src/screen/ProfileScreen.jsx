@@ -52,7 +52,7 @@ const ProfileScreen = () => {
         // Reset profile update state
         dispatch({ type: USER_UPDATE_PROFILE_FAIL });
         // Get user details and orders
-        dispatch(getUserDetails('profile'));
+        dispatch(getUserDetails(userInfo.id));
         dispatch(listMyOrders());
       } else {
         // Populate form fields with user data
@@ -127,7 +127,7 @@ const ProfileScreen = () => {
             />
           </Form.Group>
 
-          <Button type='submit' variant='primary'>Update</Button>
+          <Button type='submit' variant='primary' className="mt-2">Update</Button>
         </Form>
       </Col>
 

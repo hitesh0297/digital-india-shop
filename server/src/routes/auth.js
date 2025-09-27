@@ -23,11 +23,13 @@ router.post('/login', async (req, res, next) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-    const ok = await verifyPassword(password, user.passwordHash);
+    const ok = await verifyPassword(password, user.password);
     if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
     const token = jwt.sign({ sub: user._id.toString(), role: user.role, email: user.email }, config.jwtSecret, { expiresIn: '7d' });
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
-  } catch (e) { next(e); }
+  } catch (e) { 
+    next(e); 
+  }
 });
 
 export default router;
