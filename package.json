@@ -1,0 +1,11 @@
+{
+  "name": "digital-india-shop",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "concurrently -k -n server,client -c blue,green \"npm:dev --prefix server\" \"npm:dev --prefix client\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

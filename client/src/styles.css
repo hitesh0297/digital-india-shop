@@ -1,0 +1,17 @@
+:root { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial; }
+body { margin: 0; background:#0b0c0f; color:#e6e6e6; }
+a { color: inherit; text-decoration: none; }
+.container { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+.nav { display:flex; gap:1rem; align-items:center; padding: 0.75rem 1rem; background:#12141a; border-bottom:1px solid #1f232b; position:sticky; top:0; }
+.nav .brand { font-weight:700; letter-spacing:0.4px; }
+.nav .grow { flex:1; }
+button { background:#2563eb; color:white; border:0; padding:0.5rem 0.75rem; border-radius:8px; cursor:pointer; }
+button:disabled { opacity:0.6; cursor:default; }
+input { width:100%; padding:0.5rem; border-radius:8px; border:1px solid #30343c; background:#0f1117; color:#e6e6e6; }
+label { display:block; margin:0.5rem 0; }
+.card { background:#12141a; border:1px solid #1f232b; padding:1rem; border-radius:12px; }
+.error { color:#ef4444; }
+.row { display:flex; gap:0.5rem; margin: 1rem 0; }
+.grid { list-style:none; padding:0; display:grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap:1rem; }
+.user { opacity:0.85; margin: 0 0.5rem; }
+h1,h2,h3 { margin: 0 0 0.75rem; }
