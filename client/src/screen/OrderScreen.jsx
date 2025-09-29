@@ -1,63 +1,111 @@
 // src/screens/OrderScreen.jsx
-import React, { useEffect, useState } from 'react'                     // react hooks
-import { useParams, Link } from 'react-router-dom'                    // read :id, link to product
-import { useSelector } from 'react-redux'                             // grab token from store
-import { Row, Col, ListGroup, Image, Card, Spinner, Alert, Table, Container, Badge } from 'react-bootstrap' // UI
-import api from '../lib/axios.js'                                              // your axios instance (uses VITE_API_URL)
+import React, { useEffect, useState } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  Row,
+  Col,
+  ListGroup,
+  Image,
+  Card,
+  Spinner,
+  Alert,
+  Table,
+  Container,
+  Badge,
+  Button,
+} from 'react-bootstrap'
+
+import api from '../lib/axios.js'
+import { createProductReview } from '../actions/productActions'
+import {
+  PRODUCT_CREATE_REVIEW_RESET,
+} from '../constants/productConstants'
 
 const API_URL =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || // Vite
-  process.env.VITE_API_URL ||                                              // Jest/Node
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
+  process.env.VITE_API_URL ||
   'http://localhost:4000'
-  
+
 const OrderScreen = () => {
-  // --- routing ---
-  const { id: orderId } = useParams()                                 // read /order/:id
+  const { id: orderId } = useParams()
+  const dispatch = useDispatch()
 
-  // --- auth (expects state.userLogin.userInfo.token) ---
-  const { userInfo } = useSelector((state) => state.userLogin || {})  // current user
-  const token = localStorage.getItem('token')                                       // JWT
+  // auth
+  const { userInfo } = useSelector((state) => state.userLogin || {})
+  const token = localStorage.getItem('token') || userInfo?.token
 
-  // --- local state ---
-  const [order, setOrder] = useState(null)                            // order doc
-  const [loading, setLoading] = useState(false)                       // spinner
-  const [error, setError] = useState(null)                            // error text
+  // order state
+  const [order, setOrder] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
-  // --- helpers ---
-  const fmtMoney = (n) => (typeof n === 'number' ? n.toFixed(2) : '0.00')   // ₹ formatting
-  const fmtDate = (d) => (d ? new Date(d).toLocaleString() : '—')           // readable date
+  // review state (redux slice)
+  const productReviewCreate = useSelector((s) => s.productReviewCreate || {})
+  const { loading: loadingReview, error: errorReview, success: successReview } = productReviewCreate
 
-  // --- fetch order ---
+  // local form state per productId
+  const [reviewInputs, setReviewInputs] = useState({}) // { [productId]: { rating: '', comment: '' } }
+  const [lastSubmittedProductId, setLastSubmittedProductId] = useState(null)
+
+  const fmtMoney = (n) => (typeof n === 'number' ? n.toFixed(2) : '0.00')
+  const fmtDate = (d) => (d ? new Date(d).toLocaleString() : '—')
+
+  // fetch order
   useEffect(() => {
-    if (!orderId) return                                              // no id, no fetch
-    if (!token) { setError('Not authorized. Please login.'); return } // need auth
+    if (!orderId) return
+    if (!token) { setError('Not authorized. Please login.'); return }
 
     const run = async () => {
       try {
-        setLoading(true); setError(null)                              // reset states
-        const { data } = await api.get(`/api/orders/${orderId}`, {    // GET /api/orders/:id
-          headers: { Authorization: `Bearer ${token}` },              // auth header
+        setLoading(true); setError(null)
+        const { data } = await api.get(`/api/orders/${orderId}`, {
+          headers: { Authorization: `Bearer ${token}` },
         })
-        setOrder(data)                                                // store order
+        setOrder(data)
       } catch (err) {
         const msg = err?.response?.data?.message ||
-                    err?.response?.data?.error ||
-                    err?.message || 'Failed to load order'
-        setError(msg)                                                 // show error
+          err?.response?.data?.error ||
+          err?.message || 'Failed to load order'
+        setError(msg)
       } finally {
-        setLoading(false)                                             // stop spinner
+        setLoading(false)
       }
     }
-
     run()
   }, [orderId, token])
 
-  // --- derived values (null-safe) ---
+  // after a successful review submission, clear that product's form and reset slice
+  useEffect(() => {
+    if (successReview && lastSubmittedProductId) {
+      setReviewInputs((prev) => ({
+        ...prev,
+        [lastSubmittedProductId]: { rating: '', comment: '' },
+      }))
+      dispatch({ type: PRODUCT_CREATE_REVIEW_RESET })
+      setLastSubmittedProductId(null)
+    }
+  }, [successReview, lastSubmittedProductId, dispatch])
+
   const items = Array.isArray(order?.orderItems) ? order.orderItems : []
   const itemsPrice = items.reduce((sum, it) => sum + (it.price || 0) * (it.qty || 0), 0)
   const taxPrice = order?.taxPrice ?? 0
   const shippingPrice = order?.shippingPrice ?? 0
   const totalPrice = order?.totalPrice ?? (itemsPrice + taxPrice + shippingPrice)
+
+  const onChangeField = (pid, field, value) => {
+    setReviewInputs((prev) => ({
+      ...prev,
+      [pid]: { ...(prev[pid] || {}), [field]: value },
+    }))
+  }
+
+  const submitReview = (pid) => {
+    const { rating, comment } = reviewInputs[pid] || {}
+    if (!rating || !comment) return
+    setLastSubmittedProductId(pid)
+    dispatch(createProductReview(pid, { rating: Number(rating), comment }))
+  }
 
   return (
     <Container className="mt-3">
@@ -71,8 +119,8 @@ const OrderScreen = () => {
           <Row>
             {/* LEFT: details */}
             <Col md={8}>
-              {/* Shipping */}
               <ListGroup variant="flush">
+                {/* Shipping */}
                 <ListGroup.Item>
                   <h2>Shipping</h2>
                   <p><strong>Name: </strong>{order.user?.name || '—'}</p>
@@ -106,7 +154,6 @@ const OrderScreen = () => {
                       Not Paid
                     </Alert>
                   )}
-                  {/* optional gateway meta */}
                   {order.paymentResult?.status && (
                     <p className="mb-0">
                       <small>
@@ -117,7 +164,7 @@ const OrderScreen = () => {
                   )}
                 </ListGroup.Item>
 
-                {/* Items */}
+                {/* Items + Review forms */}
                 <ListGroup.Item>
                   <h2>Order Items</h2>
                   {items.length === 0 ? (
@@ -137,20 +184,72 @@ const OrderScreen = () => {
                         {items.map((it) => {
                           const pid = it.product?._id || it.product || it._id || it.name
                           const subtotal = (it.qty || 0) * (it.price || 0)
+                          const form = reviewInputs[pid] || { rating: '', comment: '' }
+                          const showSuccess = successReview && lastSubmittedProductId === null // success already reset
+
                           return (
-                            <tr key={`${pid}-${it.name}`}>
-                              <td style={{ width: 64 }}>
-                                <Image src={API_URL + it.image} alt={it.name} fluid rounded />
-                              </td>
-                              <td>
-                                {pid
-                                  ? <Link to={`/product/${pid}`}>{it.name}</Link>
-                                  : it.name}
-                              </td>
-                              <td>{it.qty}</td>
-                              <td>{fmtMoney(it.price)}</td>
-                              <td>{fmtMoney(subtotal)}</td>
-                            </tr>
+                            <React.Fragment key={`${pid}-${it.name}`}>
+                              <tr>
+                                <td style={{ width: 64 }}>
+                                  <Image src={API_URL + it.image} alt={it.name} fluid rounded />
+                                </td>
+                                <td>{pid ? <Link to={`/product/${pid}`}>{it.name}</Link> : it.name}</td>
+                                <td>{it.qty}</td>
+                                <td>{fmtMoney(it.price)}</td>
+                                <td>{fmtMoney(subtotal)}</td>
+                              </tr>
+
+                              {/* Review form row */}
+                              <tr>
+                                <td colSpan={5}>
+                                  <div className="p-2 border rounded bg-light">
+                                    <strong>Write a review</strong>
+                                    {loadingReview && (
+                                      <Spinner animation="border" role="status" size="sm" className="ms-2" />
+                                    )}
+                                    {errorReview && (
+                                      <Alert variant="danger" className="mt-2 mb-2">{errorReview}</Alert>
+                                    )}
+                                    {showSuccess && (
+                                      <Alert variant="success" className="mt-2 mb-2">Review submitted</Alert>
+                                    )}
+
+                                    <div className="d-flex align-items-center gap-2 mt-2">
+                                      <label className="me-2 mb-0">Rating:</label>
+                                      <select
+                                        className="form-select form-select-sm"
+                                        style={{ width: 140 }}
+                                        value={form.rating}
+                                        onChange={(e) => onChangeField(pid, 'rating', e.target.value)}
+                                      >
+                                        <option value="">Select...</option>
+                                        <option value="1">1 - Poor</option>
+                                        <option value="2">2 - Fair</option>
+                                        <option value="3">3 - Good</option>
+                                        <option value="4">4 - Very Good</option>
+                                        <option value="5">5 - Excellent</option>
+                                      </select>
+
+                                      <input
+                                        className="form-control form-control-sm"
+                                        placeholder="Say something helpful..."
+                                        value={form.comment}
+                                        onChange={(e) => onChangeField(pid, 'comment', e.target.value)}
+                                      />
+
+                                      <Button
+                                        size="sm"
+                                        variant="primary"
+                                        onClick={() => submitReview(pid)}
+                                        disabled={!form.rating || !form.comment || loadingReview || !token}
+                                      >
+                                        Submit
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            </React.Fragment>
                           )
                         })}
                       </tbody>
@@ -183,7 +282,6 @@ const OrderScreen = () => {
                     <span>Total</span>
                     <strong>₹ {fmtMoney(totalPrice)}</strong>
                   </ListGroup.Item>
-                  {/* Place for actions (pay/cancel) if you add them later */}
                 </ListGroup>
               </Card>
             </Col>

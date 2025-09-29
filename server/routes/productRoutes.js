@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import Product from '../src/models/Product.js';
-import { createProduct, deleteProduct, getProducts, updateProduct, getSellersProducts } from '../controllers/productControllers.js';
+import { createProduct, deleteProduct, getProducts, updateProduct, getSellersProducts, createProductReview } from '../controllers/productControllers.js';
 
 const router = Router();
 
@@ -23,5 +23,7 @@ router.post('/create', createProduct);
 router.put('/:id', updateProduct);
 
 router.delete('/:id', deleteProduct);
+
+router.post('/:id/reviews', createProductReview) // POST /api/products/:id/reviews
 
 export default router;
