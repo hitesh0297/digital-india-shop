@@ -46,6 +46,7 @@ const orderSchema = mongoose.Schema(
       status: { type: String },         // Payment status (e.g. "Completed")
       update_time: { type: String },    // Last updated time from gateway
       email_address: { type: String },  // Email of payer
+      merchant: { type: String }        // Merchant used for payment
     },
 
     // 💸 Tax applied to order

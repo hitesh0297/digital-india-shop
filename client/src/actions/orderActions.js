@@ -1,5 +1,5 @@
 // orderActions.js
-import axios from "axios";
+import api from '../lib/axios.js';
 
 // Order Constants
 export const ORDER_CREATE_REQUEST = "ORDER_CREATE_REQUEST";
@@ -28,7 +28,6 @@ export const ORDER_LIST_FAIL = "ORDER_LIST_FAIL";
 
 // ------------------- ACTION CREATORS -------------------
 
-const API_URL = import.meta.env.VITE_API_URL
 
 // Create Order
 export const createOrder = (order) => async (dispatch, getState) => {
@@ -46,7 +45,7 @@ export const createOrder = (order) => async (dispatch, getState) => {
       },
     };
 
-    const { data } = await axios.post(`${API_URL}/api/orders`, order, config);
+    const { data } = await api.post(`/api/orders`, order, config);
 
     dispatch({ type: ORDER_CREATE_SUCCESS, payload: data });
   } catch (error) {
@@ -73,7 +72,7 @@ export const getOrderDetails = (id) => async (dispatch, getState) => {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     };
 
-    const { data } = await axios.get(`${API_URL}/api/orders/${id}`, config);
+    const { data } = await api.get(`/api/orders/${id}`, config);
 
     dispatch({ type: ORDER_DETAILS_SUCCESS, payload: data });
   } catch (error) {
@@ -103,8 +102,8 @@ export const payOrder = (orderId, paymentResult) => async (dispatch, getState) =
       },
     };
 
-    const { data } = await axios.put(
-      `${API_URL}/api/orders/${orderId}/pay`,
+    const { data } = await api.put(
+      `/api/orders/${orderId}/pay`,
       paymentResult,
       config
     );
@@ -134,8 +133,8 @@ export const deliverOrder = (order) => async (dispatch, getState) => {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     };
 
-    const { data } = await axios.put(
-      `${API_URL}/api/orders/${order._id}/deliver`,
+    const { data } = await api.put(
+      `/api/orders/${order._id}/deliver`,
       {},
       config
     );
@@ -165,7 +164,7 @@ export const listMyOrders = () => async (dispatch, getState) => {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     };
 
-    const { data } = await axios.get(`${API_URL}/api/orders/myorders`, config);
+    const { data } = await api.get(`/api/orders/myorders`, config);
 
     dispatch({ type: ORDER_LIST_MY_SUCCESS, payload: data });
   } catch (error) {
@@ -189,10 +188,10 @@ export const listOrders = () => async (dispatch, getState) => {
     } = getState();
 
     const config = {
-      headers: { Authorization: `Bearer ${userInfo.token}` },
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     };
 
-    const { data } = await axios.get(`${API_URL}/api/orders`, config);
+    const { data } = await api.get(`/api/orders`, config);
 
     dispatch({ type: ORDER_LIST_SUCCESS, payload: data });
   } catch (error) {

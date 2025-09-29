@@ -12,10 +12,13 @@ import productsRoutes from './routes/productRoutes.js';   // Routes handling pro
 import userRoutes from './src/routes/userRoutes.js';          // Routes handling user-related APIs
 import orderRoutes from './routes/OrderRoutes.js';        // Routes handling order-related APIs
 import uploadRoutes from './routes/uploadRoutes.js';      // Routes handling file uploads
+import paymentRoutes from './routes/paymentRoutes.js'; // Routes handlig payment
 import authRoutes from './src/routes/auth.js';      // Routes handling file uploads
 import { notFound, errorHandler } from './middlewear/errorMiddlewear.js';  // Custom error middlewares
 import { config } from './src/config/env.js';             // Custom config file for environment variables (optional)
 import { protect } from './middlewear/authMiddlewear.js';
+import Razorpay from 'razorpay';
+
 
 // 🧭 Load environment variables from .env file
 dotenv.config();
@@ -34,11 +37,19 @@ if (process.env.NODE_ENV === 'development') {
 // 📦 Middleware to parse incoming JSON requests (req.body)
 app.use(express.json());
 
+app.use(express.urlencoded({ extended: true }))
+
 // 🔓 Enable CORS (Cross-Origin Resource Sharing) to allow frontend requests
 app.use(cors({ 
   origin: config.corsOrigin,    // Allowed frontend origin(s)
   credentials: true             // Allow sending cookies or authorization headers
 }));
+
+// Initialize Razorpay
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+})
 
 // Authentication routes
 app.use('/api/auth', authRoutes);
@@ -47,19 +58,22 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', protect, productsRoutes);
 
 // 👤 All user-related APIs (e.g., POST /api/users/login)
-app.use('/api/users', userRoutes);
+app.use('/api/users', protect, userRoutes);
 
 // 📦 All order-related APIs (e.g., POST /api/orders)
-app.use('/api/orders', orderRoutes);
+app.use('/api/orders', protect, orderRoutes);
+
+// Payment releated routes
+app.use('/api/payment', protect, paymentRoutes) // POST /api/payments
 
 // 📤 Upload-related APIs (e.g., image uploads)
-app.use('/api/upload', uploadRoutes);
+app.use('/api/upload', protect, uploadRoutes);
 
 
 // 💳 Endpoint to send PayPal client ID to frontend
-app.get('/api/config/paypal', (req, res) =>
+/* app.get('/api/config/paypal', (req, res) =>
   res.send(process.env.PAYPAL_CLIENT_ID || '')
-);
+); */
 
 
 // 🗂️ Get current directory name

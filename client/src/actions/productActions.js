@@ -30,16 +30,16 @@ export const PRODUCT_TOP_SUCCESS = "PRODUCT_TOP_SUCCESS";
 export const PRODUCT_TOP_FAIL = "PRODUCT_TOP_FAIL";
 
 // ----------------- ACTION CREATORS -----------------
-import axios from "axios";
+import api from '../lib/axios.js';
 
-const API_URL = import.meta.env.VITE_API_URL
 
 // List Products
 export const listProducts = (keyword = "", pageNumber = "") => async (dispatch) => {
   try {
+    console.log("📦 List products");
     dispatch({ type: PRODUCT_LIST_REQUEST });
     const config = { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } };
-    const { data } = await axios.get(`${API_URL}/api/products?keyword=${keyword}&pageNumber=${pageNumber}`, config);
+    const { data } = await api.get(`/api/products?keyword=${keyword}&pageNumber=${pageNumber}`, config);
     dispatch({ type: PRODUCT_LIST_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
@@ -54,7 +54,7 @@ export const listProductDetails = (id) => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_DETAILS_REQUEST });
     const config = { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } };
-    const { data } = await axios.get(`${API_URL}/api/products/${id}`, config);
+    const { data } = await api.get(`/api/products/${id}`, config);
     dispatch({ type: PRODUCT_DETAILS_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
@@ -70,7 +70,7 @@ export const deleteProduct = (id) => async (dispatch, getState) => {
     dispatch({ type: PRODUCT_DELETE_REQUEST });
     const { userLogin: { userInfo } } = getState();
     const config = { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } };
-    await axios.delete(`${API_URL}/api/products/${id}`, config);
+    await api.delete(`/api/products/${id}`, config);
     dispatch({ type: PRODUCT_DELETE_SUCCESS });
   } catch (error) {
     dispatch({ type: PRODUCT_DELETE_FAIL, payload: error.response?.data.message || error.message });
@@ -88,7 +88,7 @@ export const createProduct = (product, imageFile) => async (dispatch, getState) 
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
     };
-    const createdProduct = await axios.post(`${API_URL}/api/products/create`, product, config);
+    const createdProduct = await api.post(`/api/products/create`, product, config);
 
     let created = createdProduct;
 
@@ -105,15 +105,15 @@ export const createProduct = (product, imageFile) => async (dispatch, getState) 
       }
 
       // Expect server to save into client/public/images and return path like "/images/<filename>"
-      const { data: uploadedPath } = await axios.post(
-        `${API_URL}/api/upload`,
+      const { data: uploadedPath } = await api.post(
+        `/api/upload`,
         form,
         uploadCfg
       )
 
       // 3) Persist the new image path onto the product
-      const { data: created2 } = await axios.put(
-        `${API_URL}/api/products/${createdProduct.data._id}`,
+      const { data: created2 } = await api.put(
+        `/api/products/${createdProduct.data._id}`,
         { ...product, image: uploadedPath?.file },
         config
       )
@@ -144,8 +144,8 @@ export const updateProduct = (product, imageFile) => async (dispatch, getState) 
     }
 
     // 1) Update base product fields
-    const { data: updated1 } = await axios.put(
-      `${API_URL}/api/products/${product._id}`,
+    const { data: updated1 } = await api.put(
+      `/api/products/${product._id}`,
       product,
       jsonCfg
     )
@@ -165,15 +165,15 @@ export const updateProduct = (product, imageFile) => async (dispatch, getState) 
       }
 
       // Expect server to save into client/public/images and return path like "/images/<filename>"
-      const { data: uploadedPath } = await axios.post(
-        `${API_URL}/api/upload`,
+      const { data: uploadedPath } = await api.post(
+        `/api/upload`,
         form,
         uploadCfg
       )
 
       // 3) Persist the new image path onto the product
-      const { data: updated2 } = await axios.put(
-        `${API_URL}/api/products/${product._id}`,
+      const { data: updated2 } = await api.put(
+        `/api/products/${product._id}`,
         { ...product, image: uploadedPath?.file },
         jsonCfg
       )
@@ -196,7 +196,7 @@ export const createProductReview = (productId, review) => async (dispatch, getSt
     dispatch({ type: PRODUCT_CREATE_REVIEW_REQUEST });
     const { userLogin: { userInfo } } = getState();
     const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` } };
-    await axios.post(`${API_URL}/api/products/${productId}/reviews`, review, config);
+    await api.post(`/api/products/${productId}/reviews`, review, config);
     dispatch({ type: PRODUCT_CREATE_REVIEW_SUCCESS });
   } catch (error) {
     dispatch({ type: PRODUCT_CREATE_REVIEW_FAIL, payload: error.response?.data.message || error.message });
@@ -208,7 +208,7 @@ export const listTopProducts = () => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_TOP_REQUEST });
     const config = { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } };
-    const { data } = await axios.get(`${API_URL}/api/products/top`, config);
+    const { data } = await api.get(`/api/products/top`, config);
     dispatch({ type: PRODUCT_TOP_SUCCESS, payload: data });
   } catch (error) {
     dispatch({ type: PRODUCT_TOP_FAIL, payload: error.response?.data.message || error.message });

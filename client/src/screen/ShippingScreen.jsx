@@ -1,5 +1,5 @@
-function ShippingScreen (){
-    return <>ShippingScreen</>
+const ShippingScreen = () => {
+    return (<div>ShippingScreen</div>);
 }
 
 export default ShippingScreen;

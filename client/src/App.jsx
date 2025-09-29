@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Container } from "react-bootstrap"
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import { Routes, Route, useNavigate } from "react-router-dom"
 import Header from './Components/Header';
 import Footer from './Components/Footer'
 import HomeScreen from './screen/HomeScreen'
@@ -10,7 +10,7 @@ import LoginScreen from './screen/LoginScreen';
 import RegisterScreen from './screen/RegisterScreen'
 import ProfileScreen from './screen/ProfileScreen'
 import ShippingScreen from './screen/ShippingScreen'
-import PaymentScreen from './screen/PaymentScreen'
+import ChoosePaymentScreen from './screen/ChoosePaymentScreen'
 import PlaceOrderScreen from './screen/PlaceOrderScreen'
 import OrderScreen from './screen/OrderScreen'
 import UserListScreen from './screen/UserListScreen'
@@ -18,16 +18,22 @@ import UserEditScreen from './screen/UserEditScreen';
 import ProductListScreen from './screen/ProductListScreen';
 import ProductEditScreen from './screen/ProductEditScreen'
 import OrderListScreen from './screen/OrderListScreen'
+import PaymentScreen from './screen/PaymentScreen';
+import OrderSuccess from './screen/OrderSuccessScreen';
+
+
 function App() {
-  return (
-    <Router>
+
+  return (<>
       <Header />
       <main className="py-3">
         <Container>
           <Routes>
             <Route path="/shipping" element={<ShippingScreen />} />
             <Route path="/order/:id" element={<OrderScreen />} />
-            <Route path="/payment" element={<PaymentScreen />} />
+            <Route path="/choose-payment" element={<ChoosePaymentScreen />} />
+            <Route path="/pay" element={<PaymentScreen />} />
+            <Route path="/order-success" element={<OrderSuccess />} />
             <Route path="/placeorder" element={<PlaceOrderScreen />} />
             <Route path="/login" element={<LoginScreen />} />
             <Route path="/register" element={<RegisterScreen />} />
@@ -50,7 +56,7 @@ function App() {
         </Container>
       </main>
       <Footer />
-    </Router>
+      </>
   );
 }
 export default App;

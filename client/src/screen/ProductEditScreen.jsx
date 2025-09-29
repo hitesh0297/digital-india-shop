@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { Form, Button, Row, Col, Card, ProgressBar } from 'react-bootstrap'
-import axios from 'axios'
+import axios from '../lib/axios.js'
 
 import Loader from '../Components/Loader'
 import Message from '../Components/Message'
