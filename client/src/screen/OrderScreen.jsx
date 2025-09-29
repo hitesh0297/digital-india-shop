@@ -1,257 +1,196 @@
-import React, { useState, useEffect } from 'react'
-import api from '../lib/axios.js'
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
-import { Link } from 'react-router-dom'
-import { Row, Col, ListGroup, Image, Card, Button } from 'react-bootstrap'
-import { useDispatch, useSelector } from 'react-redux'
+// src/screens/OrderScreen.jsx
+import React, { useEffect, useState } from 'react'                     // react hooks
+import { useParams, Link } from 'react-router-dom'                    // read :id, link to product
+import { useSelector } from 'react-redux'                             // grab token from store
+import { Row, Col, ListGroup, Image, Card, Spinner, Alert, Table, Container, Badge } from 'react-bootstrap' // UI
+import api from '../lib/axios.js'                                              // your axios instance (uses VITE_API_URL)
 
-// Inline Message component
-const Message = ({ variant, children }) => {
-  return (
-    <div className={`alert alert-${variant}`} role="alert">
-      {children}
-    </div>
-  )
-}
-Message.defaultProps = {
-  variant: 'info',
-}
+const API_URL =
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || // Vite
+  process.env.VITE_API_URL ||                                              // Jest/Node
+  'http://localhost:4000'
+  
+const OrderScreen = () => {
+  // --- routing ---
+  const { id: orderId } = useParams()                                 // read /order/:id
 
-// Inline Loader component
-const Loader = () => {
-  return (
-    <div className="d-flex justify-content-center">
-      <div className="spinner-border" role="status" style={{ width: '3rem', height: '3rem' }}>
-        <span className="sr-only">Loading...</span>
-      </div>
-    </div>
-  )
-}
+  // --- auth (expects state.userLogin.userInfo.token) ---
+  const { userInfo } = useSelector((state) => state.userLogin || {})  // current user
+  const token = localStorage.getItem('token')                                       // JWT
 
-// Redux actions/constants (mock imports if you want all-in-one)
-import {
-  getOrderDetails,
-  payOrder,
-  deliverOrder,
-} from '../actions/orderActions'
-import {
-  ORDER_PAY_RESET,
-  ORDER_DELIVER_RESET,
-} from '../constants/orderConstants'
+  // --- local state ---
+  const [order, setOrder] = useState(null)                            // order doc
+  const [loading, setLoading] = useState(false)                       // spinner
+  const [error, setError] = useState(null)                            // error text
 
-const OrderScreen = ({ match, history }) => {
-  const orderId = match.params.id
-  const [sdkReady, setSdkReady] = useState(false)
+  // --- helpers ---
+  const fmtMoney = (n) => (typeof n === 'number' ? n.toFixed(2) : '0.00')   // ₹ formatting
+  const fmtDate = (d) => (d ? new Date(d).toLocaleString() : '—')           // readable date
 
-  const dispatch = useDispatch()
-
-  const orderDetails = useSelector((state) => state.orderDetails)
-  const { order, loading, error } = orderDetails
-
-  const orderPay = useSelector((state) => state.orderPay)
-  const { loading: loadingPay, success: successPay } = orderPay
-
-  const orderDeliver = useSelector((state) => state.orderDeliver)
-  const { loading: loadingDeliver, success: successDeliver } = orderDeliver
-
-  const userLogin = useSelector((state) => state.userLogin)
-  const { userInfo } = userLogin
-
-  if (!loading) {
-    // Calculate prices
-    const addDecimals = (num) => {
-      return (Math.round(num * 100) / 100).toFixed(2)
-    }
-    order.itemsPrice = addDecimals(
-      order.orderItems.reduce((acc, item) => acc + item.price * item.qty, 0)
-    )
-  }
-
+  // --- fetch order ---
   useEffect(() => {
-    if (!userInfo) {
-      history.push('/login')
-    }
+    if (!orderId) return                                              // no id, no fetch
+    if (!token) { setError('Not authorized. Please login.'); return } // need auth
 
-    const addPayPalScript = async () => {
-      const { data: clientId } = await api.get('/api/config/paypal')
-      const script = document.createElement('script')
-      script.type = 'text/javascript'
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}`
-      script.async = true
-      script.onload = () => {
-        setSdkReady(true)
-      }
-      document.body.appendChild(script)
-    }
-
-    if (!order || successPay || successDeliver || order._id !== orderId) {
-      dispatch({ type: ORDER_PAY_RESET })
-      dispatch({ type: ORDER_DELIVER_RESET })
-      dispatch(getOrderDetails(orderId))
-    } else if (!order.isPaid) {
-      if (!window.paypal) {
-        addPayPalScript()
-      } else {
-        setSdkReady(true)
+    const run = async () => {
+      try {
+        setLoading(true); setError(null)                              // reset states
+        const { data } = await api.get(`/api/orders/${orderId}`, {    // GET /api/orders/:id
+          headers: { Authorization: `Bearer ${token}` },              // auth header
+        })
+        setOrder(data)                                                // store order
+      } catch (err) {
+        const msg = err?.response?.data?.message ||
+                    err?.response?.data?.error ||
+                    err?.message || 'Failed to load order'
+        setError(msg)                                                 // show error
+      } finally {
+        setLoading(false)                                             // stop spinner
       }
     }
-  }, [dispatch, orderId, successPay, successDeliver, order, history, userInfo])
 
-  const successPaymentHandler = (paymentResult) => {
-    console.log(paymentResult)
-    dispatch(payOrder(orderId, paymentResult))
-  }
+    run()
+  }, [orderId, token])
 
-  const deliverHandler = () => {
-    dispatch(deliverOrder(order))
-  }
+  // --- derived values (null-safe) ---
+  const items = Array.isArray(order?.orderItems) ? order.orderItems : []
+  const itemsPrice = items.reduce((sum, it) => sum + (it.price || 0) * (it.qty || 0), 0)
+  const taxPrice = order?.taxPrice ?? 0
+  const shippingPrice = order?.shippingPrice ?? 0
+  const totalPrice = order?.totalPrice ?? (itemsPrice + taxPrice + shippingPrice)
 
-  return loading ? (
-    <Loader />
-  ) : error ? (
-    <Message variant="danger">{error}</Message>
-  ) : (
-    <>
-      <h1>Order {order._id}</h1>
-      <Row>
-        <Col md={8}>
-          <ListGroup variant="flush">
-            <ListGroup.Item>
-              <h2>Shipping</h2>
-              <p>
-                <strong>Name: </strong> {order.user.name}
-              </p>
-              <p>
-                <strong>Email: </strong>{' '}
-                <a href={`mailto:${order.user.email}`}>{order.user.email}</a>
-              </p>
-              <p>
-                <strong>Address:</strong>
-                {order.shippingAddress.address}, {order.shippingAddress.city}{' '}
-                {order.shippingAddress.postalCode}, {order.shippingAddress.country}
-              </p>
-              {order.isDelivered ? (
-                <Message variant="success">
-                  Delivered on {order.deliveredAt}
-                </Message>
-              ) : (
-                <Message variant="danger">Not Delivered</Message>
-              )}
-            </ListGroup.Item>
+  return (
+    <Container className="mt-3">
+      <h1>Order {orderId}</h1>
 
-            <ListGroup.Item>
-              <h2>Payment Method</h2>
-              <p>
-                <strong>Method: </strong>
-                {order.paymentMethod}
-              </p>
-              {order.isPaid ? (
-                <Message variant="success">Paid on {order.paidAt}</Message>
-              ) : (
-                <Message variant="danger">Not Paid</Message>
-              )}
-            </ListGroup.Item>
+      {loading && <Spinner animation="border" role="status" className="my-3" />}
+      {error && <Alert variant="danger" className="my-3">{error}</Alert>}
 
-            <ListGroup.Item>
-              <h2>Order Items</h2>
-              {order.orderItems.length === 0 ? (
-                <Message>Order is empty</Message>
-              ) : (
-                <ListGroup variant="flush">
-                  {order.orderItems.map((item, index) => (
-                    <ListGroup.Item key={index}>
-                      <Row>
-                        <Col md={1}>
-                          <Image src={item.image} alt={item.name} fluid rounded />
-                        </Col>
-                        <Col>
-                          <Link to={`/product/${item.product}`}>{item.name}</Link>
-                        </Col>
-                        <Col md={4}>
-                          {item.qty} x ${item.price} = ${item.qty * item.price}
-                        </Col>
-                      </Row>
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-              )}
-            </ListGroup.Item>
-          </ListGroup>
-        </Col>
-
-        <Col md={4}>
-          <Card>
-            <ListGroup variant="flush">
-              <ListGroup.Item>
-                <h2>Order Summary</h2>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col>Items</Col>
-                  <Col>${order.itemsPrice}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col>Shipping</Col>
-                  <Col>${order.shippingPrice}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col>Tax</Col>
-                  <Col>${order.taxPrice}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col>Total</Col>
-                  <Col>${order.totalPrice}</Col>
-                </Row>
-              </ListGroup.Item>
-
-              {!order.isPaid && (
+      {!loading && !error && order && (
+        <>
+          <Row>
+            {/* LEFT: details */}
+            <Col md={8}>
+              {/* Shipping */}
+              <ListGroup variant="flush">
                 <ListGroup.Item>
-                  {loadingPay && <Loader />}
-                  {!sdkReady ? (
-                    <Loader />
+                  <h2>Shipping</h2>
+                  <p><strong>Name: </strong>{order.user?.name || '—'}</p>
+                  <p>
+                    <strong>Address: </strong>
+                    {order.shippingAddress
+                      ? `${order.shippingAddress.address}, ${order.shippingAddress.city}, ${order.shippingAddress.postalCode}, ${order.shippingAddress.country}`
+                      : '—'}
+                  </p>
+                  {order.isDelivered ? (
+                    <Alert variant="success" className="py-2 my-2">
+                      Delivered at {fmtDate(order.deliveredAt)}
+                    </Alert>
                   ) : (
-                    <PayPalScriptProvider options={{ 'client-id': process.env.REACT_APP_PAYPAL_CLIENT_ID }}>
-                      <PayPalButtons
-                        style={{ layout: 'vertical' }}
-                        createOrder={(data, actions) => {
-                          return actions.order.create({
-                            purchase_units: [{ amount: { value: order.totalPrice.toString() } }],
-                          })
-                        }}
-                        onApprove={(data, actions) => {
-                          return actions.order.capture().then((details) => {
-                            successPaymentHandler(details)
-                          })
-                        }}
-                      />
-                    </PayPalScriptProvider>
+                    <Alert variant="warning" className="py-2 my-2">
+                      Not Delivered
+                    </Alert>
                   )}
                 </ListGroup.Item>
-              )}
 
-              {loadingDeliver && <Loader />}
-              {userInfo && userInfo.role == 'admin' && order.isPaid && !order.isDelivered && (
+                {/* Payment */}
                 <ListGroup.Item>
-                  <Button
-                    type="button"
-                    className="btn btn-block"
-                    onClick={deliverHandler}
-                  >
-                    Mark As Delivered
-                  </Button>
+                  <h2>Payment</h2>
+                  <p><strong>Method: </strong>{order.paymentMethod || order.paymentResult?.merchant || '—'}</p>
+                  {order.isPaid ? (
+                    <Alert variant="success" className="py-2 my-2">
+                      Paid at {fmtDate(order.paidAt)}
+                    </Alert>
+                  ) : (
+                    <Alert variant="warning" className="py-2 my-2">
+                      Not Paid
+                    </Alert>
+                  )}
+                  {/* optional gateway meta */}
+                  {order.paymentResult?.status && (
+                    <p className="mb-0">
+                      <small>
+                        <Badge bg="secondary">{order.paymentResult.status}</Badge>{' '}
+                        {order.paymentResult.id ? `• Txn: ${order.paymentResult.id}` : ''}
+                      </small>
+                    </p>
+                  )}
                 </ListGroup.Item>
-              )}
-            </ListGroup>
-          </Card>
-        </Col>
-      </Row>
-    </>
+
+                {/* Items */}
+                <ListGroup.Item>
+                  <h2>Order Items</h2>
+                  {items.length === 0 ? (
+                    <Alert variant="info" className="py-2 my-2">Order is empty</Alert>
+                  ) : (
+                    <Table responsive bordered hover className="table-sm mb-0">
+                      <thead>
+                        <tr>
+                          <th>Image</th>
+                          <th>Product</th>
+                          <th>Qty</th>
+                          <th>Price (₹)</th>
+                          <th>Subtotal (₹)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {items.map((it) => {
+                          const pid = it.product?._id || it.product || it._id || it.name
+                          const subtotal = (it.qty || 0) * (it.price || 0)
+                          return (
+                            <tr key={`${pid}-${it.name}`}>
+                              <td style={{ width: 64 }}>
+                                <Image src={API_URL + it.image} alt={it.name} fluid rounded />
+                              </td>
+                              <td>
+                                {pid
+                                  ? <Link to={`/product/${pid}`}>{it.name}</Link>
+                                  : it.name}
+                              </td>
+                              <td>{it.qty}</td>
+                              <td>{fmtMoney(it.price)}</td>
+                              <td>{fmtMoney(subtotal)}</td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </Table>
+                  )}
+                </ListGroup.Item>
+              </ListGroup>
+            </Col>
+
+            {/* RIGHT: summary */}
+            <Col md={4}>
+              <Card>
+                <ListGroup variant="flush">
+                  <ListGroup.Item>
+                    <h2>Order Summary</h2>
+                  </ListGroup.Item>
+                  <ListGroup.Item className="d-flex justify-content-between">
+                    <span>Items</span>
+                    <strong>₹ {fmtMoney(itemsPrice)}</strong>
+                  </ListGroup.Item>
+                  <ListGroup.Item className="d-flex justify-content-between">
+                    <span>Shipping</span>
+                    <strong>₹ {fmtMoney(shippingPrice)}</strong>
+                  </ListGroup.Item>
+                  <ListGroup.Item className="d-flex justify-content-between">
+                    <span>Tax</span>
+                    <strong>₹ {fmtMoney(taxPrice)}</strong>
+                  </ListGroup.Item>
+                  <ListGroup.Item className="d-flex justify-content-between">
+                    <span>Total</span>
+                    <strong>₹ {fmtMoney(totalPrice)}</strong>
+                  </ListGroup.Item>
+                  {/* Place for actions (pay/cancel) if you add them later */}
+                </ListGroup>
+              </Card>
+            </Col>
+          </Row>
+        </>
+      )}
+    </Container>
   )
 }
 

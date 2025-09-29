@@ -4,7 +4,10 @@ import { Button, Row, Col, ListGroup, Image, Card } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import { createOrder } from '../actions/orderActions'
 
-const API_URL = import.meta.env.VITE_API_URL
+const API_URL =
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || // Vite
+  process.env.VITE_API_URL ||                                              // Jest/Node
+  'http://localhost:4000'
 
 // Inline Message Component
 const Message = ({ variant, children }) => {
@@ -142,14 +145,13 @@ function PlaceOrderScreen() {
               </p>
             </ListGroup.Item>
 
-            <ListGroup.Item>
+            {/* <ListGroup.Item>
               <h2>Payment Method</h2>
               <div>
                 <strong>Method: </strong>{paymentMethod || '—'}
               </div>
-              {/* NEW: detailed payment info */}
               {renderPaymentDetails()}
-            </ListGroup.Item>
+            </ListGroup.Item> */}
 
             <ListGroup.Item>
               <h2>Order Items</h2>

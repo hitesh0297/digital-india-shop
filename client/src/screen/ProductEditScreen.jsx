@@ -15,7 +15,10 @@ import { createProduct } from '../actions/productActions'
 import { PRODUCT_CREATE_RESET, PRODUCT_UPDATE_RESET } from '../constants/productConstants'
 
 // Fallback for API base (use REACT_APP_API_URL if defined; otherwise relative)
-const API_URL = import.meta.env.VITE_API_URL
+const API_URL =
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || // Vite
+  process.env.VITE_API_URL ||                                              // Jest/Node
+  'http://localhost:4000'
 
 export default function ProductEditScreen() {
   const { id: productIdParam } = useParams() // "new" OR actual ObjectId
@@ -60,9 +63,9 @@ export default function ProductEditScreen() {
     success: updateSuccess,
   } = productUpdate
 
-  // Guard: admin via role
+  // Guard: admin and seller via role
   useEffect(() => {
-    if (!userInfo || userInfo.role !== 'admin') {
+    if (!userInfo || !['admin', 'seller'].includes(userInfo.role)) {
       navigate('/login')
     }
   }, [navigate, userInfo])
@@ -89,7 +92,7 @@ export default function ProductEditScreen() {
   useEffect(() => {
     if (createSuccess && createdProduct?._id) {
       dispatch({ type: PRODUCT_CREATE_RESET })
-      navigate(`/admin/product/${createdProduct._id}/edit`)
+      navigate(`/${userInfo.role}/product/${createdProduct._id}/edit`)
     }
   }, [createSuccess, createdProduct, dispatch, navigate])
 
@@ -166,7 +169,7 @@ export default function ProductEditScreen() {
     <div className="container py-4">
       <Row className="mb-3">
         <Col>
-          <Link to="/admin/productlist" className="btn btn-light">
+          <Link to={`/${userInfo.role}/productlist`} className="btn btn-light">
             Go Back
           </Link>
         </Col>
@@ -335,7 +338,7 @@ export default function ProductEditScreen() {
                     Save Changes
                   </Button>
                 )}
-                <Link to="/admin/productlist" className="btn btn-secondary">
+                <Link to={`/${userInfo.role}/productlist`} className="btn btn-secondary">
                   Cancel
                 </Link>
               </div>

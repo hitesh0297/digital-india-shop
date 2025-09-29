@@ -35,10 +35,10 @@ const orderSchema = mongoose.Schema(
     },
 
     // 💳 Payment method used (e.g. PayPal, Credit Card)
-    paymentMethod: {
+/*     paymentMethod: {
       type: String,
       required: true,
-    },
+    }, */
 
     // 💰 Payment result returned by payment gateway (optional)
     paymentResult: {

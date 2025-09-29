@@ -20,6 +20,8 @@ import ProductEditScreen from './screen/ProductEditScreen'
 import OrderListScreen from './screen/OrderListScreen'
 import PaymentScreen from './screen/PaymentScreen';
 import OrderSuccess from './screen/OrderSuccessScreen';
+import SellerOrderListScreen from './screen/SellerOrderListScreen';
+import SellerProductListScreen from './screen/SellerProductListScreen';
 
 
 function App() {
@@ -48,10 +50,15 @@ function App() {
             <Route path="/admin/product/:id/edit" element={<ProductEditScreen />} />
             <Route path="/admin/product/create" element={<ProductEditScreen />} />
             <Route path="/admin/orderlist" element={<OrderListScreen />} />
+            <Route path="/seller/orderlist" element={<SellerOrderListScreen />} />
             <Route path="/search/:keyword" element={<HomeScreen />} />
+            <Route path="/seller/productlist" element={<SellerProductListScreen />} />
+            <Route path="/seller/productlist/:pageNumber" element={<SellerProductListScreen />} />
+            <Route path="/seller/product/:id/edit" element={<ProductEditScreen />} />
+            <Route path="/seller/product/create" element={<ProductEditScreen />} />
             <Route path="/page/:pageNumber" element={<HomeScreen />} />
             <Route path="/page/searck/:keyword/:pageNumber" element={<HomeScreen />} />
-            <Route path="/" element={<HomeScreen />} />
+            <Route path="/" exact element={<HomeScreen />} />
           </Routes>
         </Container>
       </main>

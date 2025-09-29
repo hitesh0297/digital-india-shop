@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import Product from '../src/models/Product.js';
-import { createProduct, deleteProduct, getProducts, updateProduct } from '../controllers/productControllers.js';
+import { createProduct, deleteProduct, getProducts, updateProduct, getSellersProducts } from '../controllers/productControllers.js';
 
 const router = Router();
 
 // GET /api/products
 router.get('/', getProducts);
+
+router.get('/seller', getSellersProducts)
 
 // GET /api/products/:id
 router.get('/:id', async (req, res, next) => {

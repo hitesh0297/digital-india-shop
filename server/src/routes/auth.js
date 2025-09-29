@@ -6,22 +6,53 @@ import { config } from '../config/env.js';
 
 const router = Router();
 
+// POST /api/users/register
 router.post('/register', async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) return res.status(400).json({ error: 'Missing fields' });
-    const exists = await User.findOne({ email });
-    if (exists) return res.status(409).json({ error: 'Email already registered' });
-    const passwordHash = await hashPassword(password);
-    const user = await User.create({ name, email, password: passwordHash, role: 'user' }); // All users are not admin by default
-    res.status(201).json({ id: user._id, email: user.email, name: user.name, role: user.role });
-  } catch (e) { next(e); }
+    // pull fields from body
+    const { name, email, password, role: rawRole, isSeller } = req.body; // rawRole may be "customer"/"seller"
+    if (!name || !email || !password) return res.status(400).json({ error: 'Missing fields' }); // basic validation
+
+    // normalize inputs
+    const normEmail = String(email).toLowerCase(); // keep emails case-insensitive
+    const requestedRole = (rawRole || (isSeller ? 'seller' : 'customer'))?.toString().toLowerCase(); // decide role
+    const allowedRoles = new Set(['customer', 'seller']); // roles permitted on self-signup
+
+    // security: never allow clients to create admin via this route
+    if (!allowedRoles.has(requestedRole)) {
+      return res.status(400).json({ error: 'Invalid role. Allowed: customer, seller' }); // reject "admin" or anything else
+    }
+
+    // uniqueness check
+    const exists = await User.findOne({ email: normEmail });
+    if (exists) return res.status(409).json({ error: 'Email already registered' }); // already taken
+
+    // hash + create
+    //const passwordHash = await hashPassword(password); // hash the password
+    const user = await User.create({
+      name: name.trim(), // store trimmed name
+      email: normEmail,  // store normalized email
+      password, // store hash
+      role: requestedRole, // "customer" or "seller"
+    });
+
+    // respond with minimal profile
+    return res.status(201).json({
+      id: user._id.toString(), // expose id as string
+      email: user.email,       // echo email
+      name: user.name,         // echo name
+      role: user.role,         // echo role
+    });
+  } catch (e) {
+    next(e); // standard error handler
+  }
 });
+
 
 router.post('/login', async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select('+password +role');
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
     const ok = await verifyPassword(password, user.password);
     if (!ok) return res.status(401).json({ error: 'Invalid credentials' });

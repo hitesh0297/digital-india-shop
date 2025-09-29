@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { protect } from '../middlewear/authMiddlewear.js';
-import { addOrderItems, getMyOrders } from '../controllers/OrderControllers.js'
+import { addOrderItems, getMyOrders, getOrderById, getOrders } from '../controllers/OrderControllers.js'
 
 const router = Router();
 
@@ -9,6 +9,10 @@ router.get('/myorders', getMyOrders);
 
 // Create order
 router.post('/', addOrderItems);
+
+router.get('/', getOrders);
+
+router.get('/:orderId', getOrderById);
 
 
 export default router;

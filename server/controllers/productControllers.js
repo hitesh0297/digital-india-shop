@@ -22,6 +22,38 @@ const getProducts = asyncHandle(async(req,res)=>{
   }
 })
 
+const getSellersProducts = asyncHandle(async (req, res) => {
+  try {
+    const pageSize = 10
+    const page = Number(req.query.pageNumber) || 1
+
+    // keyword filter on name (case-insensitive)
+    const keyword = req.query.keyword
+      ? { name: { $regex: req.query.keyword, $options: 'i' } }
+      : {}
+
+    // base filter
+    const filter = { ...keyword }
+
+    // if logged-in user is a seller, only return THEIR products
+    if (req.user?.role === 'seller' && req.user?._id) {
+      filter.user = req.user._id // owner field in your schema
+    }
+
+    const count = await Product.countDocuments(filter)
+
+    const products = await Product.find(filter)
+      .sort({ createdAt: -1 })              // newest first (optional)
+      .limit(pageSize)
+      .skip(pageSize * (page - 1))
+
+    res.json({ products, page, pages: Math.ceil(count / pageSize) })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
 //@dec Fehct single Product
 //@route GET /api/products/:id
 //@access Public
@@ -139,4 +171,4 @@ const getTopProducts = asyncHandle(async (req, res) => {
   const products = await Product.find({}).sort({ rating: -1 }).limit(3)
   res.json(products)
 })
-export { getProducts, getProductById , deleteProduct , updateProduct, createProduct,createProductReview,getTopProducts}
+export { getProducts, getSellersProducts, getProductById , deleteProduct , updateProduct, createProduct,createProductReview,getTopProducts}

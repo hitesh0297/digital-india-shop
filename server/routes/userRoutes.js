@@ -21,8 +21,8 @@ router.post('/login', async (req, res, next) => {
     const { email } = req.body || {};
     const user = await User.findOne({ email });
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-    const token = jwt.sign({ sub: user._id.toString(), role: user.role || 'user' }, process.env.JWT_SECRET || 'dev_secret', { expiresIn: '7d' });
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role || 'user' } });
+    const token = jwt.sign({ sub: user._id.toString(), role: user.role }, process.env.JWT_SECRET || 'dev_secret', { expiresIn: '7d' });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (e) { next(e); }
 });
 

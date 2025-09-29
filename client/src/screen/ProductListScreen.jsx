@@ -1,3 +1,4 @@
+// Admin page
 import React, { useEffect } from "react";
 import { Table, Button, Row, Col, Spinner, Alert } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
@@ -70,7 +71,7 @@ function ProductListScreen({ history, match }) {
   useEffect(() => {
     dispatch({ type: PRODUCT_CREATE_RESET });
 
-     if (!userInfo || userInfo.role == 'user') { 
+     if (!userInfo || userInfo.role != 'admin') { 
       navigate("/login");
     }
 
@@ -86,11 +87,6 @@ function ProductListScreen({ history, match }) {
     if (window.confirm("Are you sure?")) {
       dispatch(deleteProduct(id));
     }
-  };
-
-  // create product handler
-  const createProductHandler = () => {
-    dispatch(createProduct());
   };
 
   return (

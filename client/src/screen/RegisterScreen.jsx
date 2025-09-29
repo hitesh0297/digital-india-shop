@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Form, Button, Row, Col, Spinner, Alert, Container } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import { register } from '../actions/userActions'
@@ -9,34 +9,31 @@ const RegisterScreen = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [isSeller, setIsSeller] = useState(false) // ✅ track checkbox
   const [message, setMessage] = useState(null)
 
   const dispatch = useDispatch()
 
-  const userRegister = useSelector((state) => {
-    console.log('state: ', state);
-    return state.userRegister
-})
+  const userRegister = useSelector((state) => state.userRegister)
   const { loading, error, userInfo } = userRegister
 
-  const navigate = useNavigate();
-  const location = useLocation(); 
-
-  // Redirect logic
-  const redirect = location.search ? location.search.split('=')[1] : '/';
+  const navigate = useNavigate()
+  const location = useLocation()
+  const redirect = location.search ? location.search.split('=')[1] : '/'
 
   useEffect(() => {
     if (userInfo) {
-      navigate(redirect);
+      navigate(redirect)
     }
-  }, [navigate, userInfo, redirect]);
+  }, [navigate, userInfo, redirect])
 
   const submitHandler = (e) => {
     e.preventDefault()
     if (password !== confirmPassword) {
       setMessage('Passwords do not match')
     } else {
-      dispatch(register(name, email, password))
+      const role = isSeller ? 'seller' : 'customer' // ✅ determine role
+      dispatch(register(name, email, password, role)) // ✅ pass role
     }
   }
 
@@ -46,13 +43,8 @@ const RegisterScreen = () => {
         <Col xs={12} md={6}>
           <h1>Sign Up</h1>
 
-          {/* Local error for password mismatch */}
           {message && <Alert variant="danger">{message}</Alert>}
-
-          {/* Error from backend */}
           {error && <Alert variant="danger">{error}</Alert>}
-
-          {/* Loader */}
           {loading && <Spinner animation="border" role="status" />}
 
           <Form onSubmit={submitHandler}>
@@ -94,6 +86,16 @@ const RegisterScreen = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               ></Form.Control>
+            </Form.Group>
+
+            {/* ✅ Seller checkbox */}
+            <Form.Group controlId="isSeller">
+              <Form.Check
+                type="checkbox"
+                label="Register as Seller"
+                checked={isSeller}
+                onChange={(e) => setIsSeller(e.target.checked)}
+              />
             </Form.Group>
 
             <Button type="submit" variant="primary" className="mt-3">

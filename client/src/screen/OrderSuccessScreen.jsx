@@ -9,7 +9,6 @@ const OrderSuccess = () => {
     transactionId,
     cartItems,
     shippingAddress,
-    paymentMethod,
     paymentDetails,
   } = location.state || {}
 
@@ -34,10 +33,7 @@ const OrderSuccess = () => {
         {shippingAddress.address}, {shippingAddress.city},{" "}
         {shippingAddress.country}
       </p>
-
-      <h4 className="mt-3">Payment Info:</h4>
-      <p>Method: {paymentMethod}</p>
-      {/* {paymentDetails && <pre>{JSON.stringify(paymentDetails, null, 2)}</pre>} */}
+      {paymentDetails && <pre>{JSON.stringify(paymentDetails, null, 2)}</pre>}
     </Card>
   )
 }

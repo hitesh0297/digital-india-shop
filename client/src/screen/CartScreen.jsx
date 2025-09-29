@@ -7,7 +7,10 @@ import Message from '../Components/Message'
 import { addToCart, removeFromCart, saveShippingAddress } from '../actions/cartActions'
 import { COUNTRIES } from '../utils/countries'
 
-const API_URL = import.meta.env.VITE_API_URL || ''
+const API_URL =
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || // Vite
+  process.env.VITE_API_URL ||                                              // Jest/Node
+  'http://localhost:4000' || ''
 
 const CartScreen = () => {
   const { id: productId } = useParams()
@@ -52,7 +55,7 @@ const CartScreen = () => {
 
     if (!canSave) return;
 
-    navigate('/choose-payment')
+    navigate('/placeorder')
   }
 
   const canSave = useMemo(() => {

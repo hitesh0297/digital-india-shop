@@ -4,6 +4,7 @@ import { LinkContainer } from "react-router-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { listUsers, deleteUser } from "../actions/userActions";
 import { useNavigate } from "react-router-dom"; 
+import { capitalizeFirstLetter } from "../utils/stringUtils";
 
 // Inline Loader Component
 const Loader = () => (
@@ -80,11 +81,7 @@ function UserListScreen() {
                   <a href={`mailto:${user.email}`}>{user.email}</a>
                 </td>
                 <td>
-                  {user.role == 'admin' ? (
-                    <i className="fas fa-check" style={{ color: "green" }}></i>
-                  ) : (
-                    <i className="fas fa-times" style={{ color: "red" }}></i>
-                  )}
+                  {capitalizeFirstLetter(user.role)}
                 </td>
                 <td>
                   <LinkContainer to={`/admin/user/${user._id}/edit`}>

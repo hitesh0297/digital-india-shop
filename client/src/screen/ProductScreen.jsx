@@ -6,7 +6,10 @@ import Message from '../Components/Message'
 import { listProductDetails } from '../actions/productActions'
 import { useDispatch, useSelector } from 'react-redux'
 
-const API_URL = import.meta.env.VITE_API_URL
+const API_URL =
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || // Vite
+  process.env.VITE_API_URL ||                                              // Jest/Node
+  'http://localhost:4000'
 
 const Loader = () => (
   <Spinner
@@ -103,7 +106,6 @@ function ProductScreen() {
                         <Col>Qty</Col>
                         <Col>
                             <Form.Select
-                            defaultValue="1"
                                 value={qty ? String(qty) : '1'}
                                 onChange={(e) => setQty(Number(e.target.value))}
                                 >

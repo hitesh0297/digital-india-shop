@@ -27,7 +27,6 @@ import {
 
 import { ORDER_LIST_MY_RESET } from '../constants/orderConstants'
 
-const token = localStorage.getItem('token');
 
 
 // LOGIN USER
@@ -79,7 +78,7 @@ export const logout = (navigate = null) => (dispatch) => {
 }
 
 // REGISTER USER
-export const register = (name, email, password) => async (dispatch) => {
+export const register = (name, email, password, role) => async (dispatch) => {
   try {
     dispatch({ type: USER_REGISTER_REQUEST }) // start registration request
 
@@ -90,7 +89,7 @@ export const register = (name, email, password) => async (dispatch) => {
     }
 
     // Make API call to register user
-    const { data } = await api.post(`/api/auth/register`, { name, email, password }, config)
+    const { data } = await api.post(`/api/auth/register`, { name, email, password, role, isSeller: role === 'seller'}, config)
 
     dispatch({ type: USER_REGISTER_SUCCESS, payload: data }) // registration success
     dispatch({ type: USER_LOGIN_SUCCESS, payload: data }) // also log in the user after registration
@@ -115,7 +114,7 @@ export const getUserDetails = (id) => async (dispatch, getState) => {
     const config = {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // send token for auth
+        Authorization: `Bearer ${localStorage.getItem('token')}`, // send token for auth
       },
     }
 
@@ -142,7 +141,7 @@ export const updateUserProfile = (user) => async (dispatch, getState) => {
     const config = {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     }
 
@@ -168,7 +167,7 @@ export const listUsers = () => async (dispatch, getState) => {
 
     const config = {
       headers: {
-        Authorization: `Bearer ${token}`, // admin auth token
+        Authorization: `Bearer ${localStorage.getItem('token')}`, // admin auth token
       },
     }
 
@@ -192,7 +191,7 @@ export const deleteUser = (id) => async (dispatch, getState) => {
 
     const config = {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     }
 
@@ -218,7 +217,7 @@ export const updateUser = (user) => async (dispatch, getState) => {
     const config = {
       headers: {
         "content-type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     }
 

@@ -1,3 +1,4 @@
+// This page is for admin
 import React, { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { Form, Button, Spinner, Alert, Container, Row, Col } from "react-bootstrap";
@@ -39,7 +40,7 @@ const UserEditScreen = () => {
   // Local state
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState('user');
+  const [role, setRole] = useState('');
 
   const dispatch = useDispatch();
 

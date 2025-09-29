@@ -33,7 +33,7 @@ const Header = () => {
               </Nav.Link>
             </LinkContainer>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            <Navbar.Collapse id="basic-navbar-nav">
+            <Navbar.Collapse id="basic-navbar-nav" className="d-flex justify-content-around w-100">
               <SearchBox navigate={navigate} />
               <Nav className="ml-auto">
                 <LinkContainer to="/cart">
@@ -55,7 +55,7 @@ const Header = () => {
                 </LinkContainer>
                 }
                 {userInfo && userInfo.role == 'admin' && (
-                  <NavDropdown title="admin" id="adminmenu">
+                  <NavDropdown title="Admin" id="adminmenu">
                     <LinkContainer to="/admin/userlist">
                       <NavDropdown.Item>Users</NavDropdown.Item>
                     </LinkContainer>
@@ -64,6 +64,16 @@ const Header = () => {
                     </LinkContainer>
                     <LinkContainer to="/admin/orderlist">
                       <NavDropdown.Item>Orders</NavDropdown.Item>
+                    </LinkContainer>
+                  </NavDropdown>
+                )}
+                {userInfo && userInfo.role == 'seller' && (
+                  <NavDropdown title="Seller" id="sellermenu">
+                    <LinkContainer to="/seller/productlist">
+                      <NavDropdown.Item>Products</NavDropdown.Item>
+                    </LinkContainer>
+                    <LinkContainer to="/seller/orderlist">
+                      <NavDropdown.Item>Sales</NavDropdown.Item>
                     </LinkContainer>
                   </NavDropdown>
                 )}

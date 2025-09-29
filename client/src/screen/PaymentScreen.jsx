@@ -11,7 +11,7 @@ const PaymentScreen = () => {
 
   // Get values from Redux store
   const { cart, userLogin } = useSelector((state) => state)
-  const { cartItems, shippingAddress, paymentMethod, paymentDetails } = cart
+  const { cartItems, shippingAddress, paymentDetails } = cart
   const { userInfo } = userLogin
 
   const totalPrice = parseFloat(cartItems.reduce((acc, item) => acc + item.price * item.qty, 0).toFixed(2))
@@ -24,7 +24,6 @@ const PaymentScreen = () => {
         const payload = {
           orderItems: cartItems,
           shippingAddress,
-          paymentMethod,
           itemsPrice: 0,
           taxPrice: 0,
           shippingPrice: 0,
@@ -58,11 +57,12 @@ const PaymentScreen = () => {
     const openRazorpay = (orderData) => {
       try {
         const options = {
-          key: import.meta.env.VITE_RAZORPAY_KEY || 'rzp_test_RMxU0rBxi0Dptx',
+          key: ((typeof import.meta !== 'undefined' && import.meta.env?.VITE_RAZORPAY_KEY) || // Vite
+                process.env.VITE_RAZORPAY_KEY) || 'rzp_test_RMxU0rBxi0Dptx',
           amount: totalPrice * 100,
           currency: "INR",
           name: "Hitesh IGNOU Project",
-          description: `Payment via ${paymentMethod}`,
+          description: `Payment`,
           handler: async function (response) {
             try {
               // 3) Save payment result to backend
@@ -86,7 +86,6 @@ const PaymentScreen = () => {
                   transactionId: response.razorpay_payment_id,
                   cartItems,
                   shippingAddress,
-                  paymentMethod,
                   paymentDetails,
                 },
               })
@@ -119,7 +118,7 @@ const PaymentScreen = () => {
     }
 
     loadRazorpay()
-  }, [cartItems, shippingAddress, paymentMethod, paymentDetails, totalPrice, userInfo, navigate])
+  }, [cartItems, shippingAddress, paymentDetails, totalPrice, userInfo, navigate])
 
   return <div>Loading payment gateway...</div>
 }

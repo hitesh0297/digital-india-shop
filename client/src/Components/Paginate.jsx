@@ -2,7 +2,7 @@ import React from 'react'
 import { Pagination } from 'react-bootstrap'
 import { LinkContainer } from 'react-router-bootstrap'
 
-const Paginate = ({ pages = 1, page = 1, keyword = '', role = 'user' }) => {
+const Paginate = ({ pages = 1, page = 1, keyword = '', role = 'customer' }) => {
   if (pages <= 1) return null
   const items = []
   for (let x = 1; x <= pages; x++) {

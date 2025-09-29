@@ -113,3 +113,14 @@ app.listen(PORT, () => {
     `🚀 Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`.yellow.bold
   );
 });
+
+import bcrypt from 'bcryptjs' // change to 'bcryptjs' to cross-check
+
+const plain = '123456'                                   // exact password
+const hash  = '$2a$10$iNE5wLEPJYE1AwkorD8ofOLiYqvSWK1yNQFAmWUCSPUpb8AI.Av/2' // your hash
+
+console.log('hash length:', hash.length)                 // should be 60
+console.log('starts with $2', hash.startsWith('$2'))     // quick sanity
+
+const ok = await bcrypt.compare(plain, hash)             // compare(plain, hash)
+console.log('compare result:', ok)                       // expect: true
