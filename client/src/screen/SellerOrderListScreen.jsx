@@ -25,7 +25,7 @@ const SellerOrderListScreen = () => {
         setLoading(true)                                           // start loading
         setError(null)                                             // clear old error
         // Backend should return only orders that include this seller's products
-        const { data } = await api.get('/api/orders?scope=seller', {
+        const { data } = await api.get('/api/orders/seller', {
           headers: { Authorization: `Bearer ${token}` },           // auth header
         })
         setOrders(Array.isArray(data) ? data : data?.orders || []) // normalize array
